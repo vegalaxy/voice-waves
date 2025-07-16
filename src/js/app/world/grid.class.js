@@ -22,6 +22,7 @@ H.World.Grid = B.Core.Abstract.extend(
         this.ticker     = new B.Tools.Ticker();
         this.scene      = this.registry.get( 'scene' );
         this.microphone = this.registry.get( 'microphone' );
+        this.app        = this.registry.get( 'app' );
         this.stats      = this.registry.get( 'stats' );
         this.width      = 400;
         this.depth      = 400;
@@ -443,6 +444,7 @@ H.World.Grid = B.Core.Abstract.extend(
         // Default mode (microphone)
         else
         {
+            // Get microphone levels
             this.line.materials.shader_x.uniforms.uFrequency1.value = this.microphone.values.frequencies[ 0 ].smoothed / 4000;
             this.line.materials.shader_z.uniforms.uFrequency1.value = this.microphone.values.frequencies[ 0 ].smoothed / 4000;
             this.line.materials.shader_x.uniforms.uFrequency2.value = this.microphone.values.frequencies[ 1 ].smoothed / 4000;
@@ -453,12 +455,40 @@ H.World.Grid = B.Core.Abstract.extend(
             this.line.materials.shader_z.uniforms.uFrequency4.value = this.microphone.values.frequencies[ 3 ].smoothed / 4000;
             this.line.materials.shader_x.uniforms.uTimeDomain.value = Math.log( this.microphone.values.time_domain.smoothed ) / 50;
             this.line.materials.shader_z.uniforms.uTimeDomain.value = Math.log( this.microphone.values.time_domain.smoothed ) / 50;
-            this.line.materials.shader_x.uniforms.uVolume.value = this.microphone.values.volume.smoothed * 0.04;
-            this.line.materials.shader_z.uniforms.uVolume.value = this.microphone.values.volume.smoothed * 0.04;
+            
+            // Combine microphone and AI audio levels
+            let micLevel = this.microphone.values.volume.smoothed * 0.04;
+            let aiLevel = 0;
+            
+            // Get AI audio level if available
+            if (this.app && this.app.conversationalAI) {
+                aiLevel = this.app.conversationalAI.getCombinedLevel() * 0.04;
+            }
+            
+            // Use the higher of the two levels
+            const combinedLevel = Math.max(micLevel, aiLevel);
+            
+            this.line.materials.shader_x.uniforms.uVolume.value = combinedLevel;
+            this.line.materials.shader_z.uniforms.uVolume.value = combinedLevel;
+            
+            // Combine microphone and AI audio levels
+            let micLevel = this.microphone.values.volume.smoothed * 0.04;
+            let aiLevel = 0;
+            
+            // Get AI audio level if available
+            if (this.app && this.app.conversationalAI) {
+                aiLevel = this.app.conversationalAI.getCombinedLevel() * 0.04;
+            }
+            
+            // Use the higher of the two levels
+            const combinedLevel = Math.max(micLevel, aiLevel);
+            
+            this.line.materials.shader_x.uniforms.uVolume.value = combinedLevel;
+            this.line.materials.shader_z.uniforms.uVolume.value = combinedLevel;
             this.line.materials.shader_x.uniforms.uElevationMultiplier.value = this.options.elevation_multiplier;
             this.line.materials.shader_z.uniforms.uElevationMultiplier.value = this.options.elevation_multiplier;
-            this.line.materials.shader_x.uniforms.uStripsWidth.value = this.microphone.values.volume.value * 5 + 0.2;
-            this.line.materials.shader_z.uniforms.uStripsWidth.value = this.microphone.values.volume.value * 5 + 0.2;
+            this.line.materials.shader_x.uniforms.uStripsWidth.value = combinedLevel * 125 + 0.2;
+            this.line.materials.shader_z.uniforms.uStripsWidth.value = combinedLevel * 125 + 0.2;
 
             var color   = new THREE.Color(),
                 average = this.microphone.values.frequency.average,
