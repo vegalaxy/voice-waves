@@ -3,16 +3,16 @@ H.World.Atmosphere = B.Core.Abstract.extend(
     options: {
         fog: {
             active: true,
-            color: 0x0a0a1a,
+            color: 0x1a1a2e,
             near: 50,
             far: 800,
-            density: 0.0008
+            density: 0.002
         },
         volumetric: {
             active: true,
-            intensity: 0.3,
+            intensity: 1.0,
             color: 0x4a6fa5,
-            opacity: 0.15,
+            opacity: 0.4,
             animation_speed: 0.0005
         }
     },
@@ -40,6 +40,8 @@ H.World.Atmosphere = B.Core.Abstract.extend(
     init_fog: function() {
         if (!this.options.fog.active) return;
 
+        console.log('Initializing fog...');
+        
         // Create exponential fog for more atmospheric effect
         this.fog = new THREE.FogExp2(
             this.options.fog.color,
@@ -48,6 +50,7 @@ H.World.Atmosphere = B.Core.Abstract.extend(
 
         // Apply to scene
         this.scene.object.fog = this.fog;
+        console.log('Fog applied to scene:', this.fog);
     },
 
     /**
@@ -56,9 +59,11 @@ H.World.Atmosphere = B.Core.Abstract.extend(
     init_volumetric_lighting: function() {
         if (!this.options.volumetric.active) return;
 
+        console.log('Initializing volumetric lighting...');
+        
         // Create volumetric light geometry - large sphere around the scene
         this.volumetric = {};
-        this.volumetric.geometry = new THREE.SphereGeometry(600, 32, 16);
+        this.volumetric.geometry = new THREE.SphereGeometry(800, 32, 16);
         
         // Custom shader material for volumetric effect
         this.volumetric.material = new THREE.ShaderMaterial({
@@ -144,10 +149,13 @@ H.World.Atmosphere = B.Core.Abstract.extend(
 
         // Create mesh
         this.volumetric.mesh = new THREE.Mesh(this.volumetric.geometry, this.volumetric.material);
-        this.volumetric.mesh.position.set(0, 100, 0); // Center around the grid area
+        this.volumetric.mesh.position.set(0, 50, 0); // Center around the grid area
+        
+        console.log('Volumetric mesh created:', this.volumetric.mesh);
 
         // Add to scene
         this.scene.object.add(this.volumetric.mesh);
+        console.log('Volumetric lighting added to scene');
     },
 
     /**
@@ -223,7 +231,7 @@ H.World.Atmosphere = B.Core.Abstract.extend(
     frame: function(infos) {
         if (this.volumetric && this.volumetric.material) {
             // Update time for animation
-            this.volumetric.material.uniforms.uTime.value = infos.elapsed * this.options.volumetric.animation_speed;
+            this.volumetric.material.uniforms.uTime.value = infos.elapsed * 0.001;
             
             // Update camera position for distance calculations
             if (this.camera && this.camera.object) {
@@ -233,7 +241,7 @@ H.World.Atmosphere = B.Core.Abstract.extend(
             // Audio reactivity - very subtle
             var audioLevel = 0;
             if (this.microphone && this.microphone.values) {
-                audioLevel = this.microphone.values.volume.smoothed * 0.01; // Very subtle
+                audioLevel = this.microphone.values.volume.smoothed * 0.02; // Slightly more visible
             }
             this.volumetric.material.uniforms.uAudioLevel.value = audioLevel;
         }
