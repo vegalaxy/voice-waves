@@ -1,5 +1,9 @@
 {
-  "dependencies": {
-    "@elevenlabs/client": "^0.3.0"
+  "name": "voice-waves",
+  "version": "1.0.0",
+  "description": "Voice-reactive wave visualization",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000"
   }
 }
