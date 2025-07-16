@@ -13,7 +13,6 @@ H.World.Scene = B.Core.Abstract.extend(
         this.grid     = new H.World.Grid();
         this.renderer = new H.World.Renderer();
         this.floor    = new H.World.Floor();
-        this.atmosphere = new H.World.Atmosphere();
         // this.light    = new H.World.Lights();
 
         // Init
