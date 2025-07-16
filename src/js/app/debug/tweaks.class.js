@@ -2,7 +2,7 @@ H.Debug.Tweaks = B.Core.Abstract.extend(
 {
     options :
     {
-        visible : true
+        visible : false
     },
 
     construct : function( options )

@@ -37,6 +37,9 @@ H.UI = B.Core.Event_Emitter.extend(
                 that.controls.$.container.classList.remove( 'recording' );
         } );
 
+        // Hide controls by default
+        this.controls.$.container.style.display = 'none';
+
         // Click event
         this.controls.$.container.onclick = function( e )
         {
