@@ -191,12 +191,21 @@ H.World.Atmosphere = B.Core.Abstract.extend(
      * FRAME
      */
     frame: function(infos) {
-        if (this.volumetric && this.volumetric.meshes) {
+        if (this.volumetric && this.volumetric.material) {
             // Update time for animation
-            for (var i = 0; i < this.volumetric.meshes.length; i++) {
-                var mesh = this.volumetric.meshes[i];
-                mesh.material.uniforms.uTime.value = infos.elapsed * 0.001 * (1 + i * 0.2);
+            this.volumetric.material.uniforms.uTime.value = infos.elapsed * 0.001;
+            
+            // Update camera position for distance calculations
+            if (this.camera && this.camera.object) {
+                this.volumetric.material.uniforms.uCameraPosition.value.copy(this.camera.object.position);
             }
+            
+            // Audio reactivity - very subtle
+            var audioLevel = 0;
+            if (this.microphone && this.microphone.values) {
+                audioLevel = this.microphone.values.volume.smoothed * 0.02; // Slightly more visible
+            }
+            this.volumetric.material.uniforms.uAudioLevel.value = audioLevel;
         }
     }
 });
