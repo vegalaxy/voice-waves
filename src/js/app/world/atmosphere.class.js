@@ -73,7 +73,9 @@ H.World.Atmosphere = B.Core.Abstract.extend(
             blending: THREE.NormalBlending,
             uniforms: {
                 uTime: { type: 'f', value: 0 },
-                uOpacity: { type: 'f', value: this.options.volumetric.opacity }
+                uOpacity: { type: 'f', value: this.options.volumetric.opacity },
+                uCameraPosition: { type: 'v3', value: new THREE.Vector3() },
+                uAudioLevel: { type: 'f', value: 0 }
             },
             vertexShader: [
                 'varying vec2 vUv;',
@@ -86,6 +88,8 @@ H.World.Atmosphere = B.Core.Abstract.extend(
             fragmentShader: [
                 'uniform float uTime;',
                 'uniform float uOpacity;',
+                'uniform vec3 uCameraPosition;',
+                'uniform float uAudioLevel;',
                 'varying vec2 vUv;',
                 '',
                 'void main() {',
