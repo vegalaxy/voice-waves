@@ -119,43 +119,6 @@ H.World.Atmosphere = B.Core.Abstract.extend(
         
         console.log('Simplified volumetric lighting added');
     },
-                '',
-                'void main() {',
-                '    // Create moving volumetric patterns',
-                '    vec3 pos = vWorldPosition * 0.003;',
-                '    float n1 = smoothNoise(pos + uTime * 0.1);',
-                '    float n2 = smoothNoise(pos * 2.0 + uTime * 0.05);',
-                '    float n3 = smoothNoise(pos * 4.0 - uTime * 0.02);',
-                '    ',
-                '    float volumetric = (n1 * 0.5 + n2 * 0.3 + n3 * 0.2);',
-                '    ',
-                '    // Distance-based falloff',
-                '    float distanceFalloff = 1.0 - smoothstep(200.0, 600.0, vDistance);',
-                '    ',
-                '    // Audio reactivity - subtle pulsing',
-                '    float audioEffect = 1.0 + uAudioLevel * 0.3;',
-                '    ',
-                '    // Combine effects',
-                '    float alpha = volumetric * uOpacity * distanceFalloff * audioEffect * uIntensity;',
-                '    ',
-                '    // Subtle color variation',
-                '    vec3 color = uColor + vec3(volumetric * 0.1);',
-                '    ',
-                '    gl_FragColor = vec4(color, alpha);',
-                '}'
-            ].join('\n')
-        });
-
-        // Create mesh
-        this.volumetric.mesh = new THREE.Mesh(this.volumetric.geometry, this.volumetric.material);
-        this.volumetric.mesh.position.set(0, 50, 0); // Center around the grid area
-        
-        console.log('Volumetric mesh created:', this.volumetric.mesh);
-
-        // Add to scene
-        this.scene.object.add(this.volumetric.mesh);
-        console.log('Volumetric lighting added to scene');
-    },
 
     /**
      * INIT EVENTS
@@ -201,23 +164,25 @@ H.World.Atmosphere = B.Core.Abstract.extend(
         });
 
         // Volumetric controls
-        if (this.volumetric && this.volumetric.meshes) {
+        if (this.volumetric) {
             var volumetricFolder = folder.addFolder('Volumetric');
             
             var volumetricActive = volumetricFolder.add(this.options.volumetric, 'active');
             volumetricActive.name('active');
             volumetricActive.onChange(function(value) {
-                for (var i = 0; i < that.volumetric.meshes.length; i++) {
-                    that.volumetric.meshes[i].visible = value;
-                }
+                that.volumetric.mesh.visible = value;
+            });
+
+            var volumetricIntensity = volumetricFolder.add(this.options.volumetric, 'intensity', 0, 1).step(0.01);
+            volumetricIntensity.name('intensity');
+            volumetricIntensity.onChange(function(value) {
+                that.volumetric.material.uniforms.uIntensity.value = value;
             });
 
             var volumetricOpacity = volumetricFolder.add(this.options.volumetric, 'opacity', 0, 0.5).step(0.01);
             volumetricOpacity.name('opacity');
             volumetricOpacity.onChange(function(value) {
-                for (var i = 0; i < that.volumetric.meshes.length; i++) {
-                    that.volumetric.meshes[i].material.uniforms.uOpacity.value = value * (1 - i * 0.3);
-                }
+                that.volumetric.material.uniforms.uOpacity.value = value;
             });
         }
     },
