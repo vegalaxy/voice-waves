@@ -15,7 +15,9 @@ H.App = B.Core.Abstract.extend(
         this.stats      = new H.Debug.Stats();
         this.tweaks     = new H.Debug.Tweaks();
         this.microphone = new H.Microphone();
+        this.openai     = new H.OpenAIRealtime();
         this.scene      = new H.World.Scene();
+        this.ui         = new H.UI();
 
         this.ticker.run();
     }
