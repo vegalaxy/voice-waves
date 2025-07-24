@@ -99,11 +99,24 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
         const response = await fetch(this.options.sessionEndpoint);
         
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Failed to get ephemeral token: ${errorData.error || response.statusText}`);
+            let errorMessage = response.statusText;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.error || errorMessage;
+            } catch (jsonError) {
+                // Response is not JSON, likely HTML error page
+                errorMessage = `Server error (${response.status}). Make sure to run 'npm start' instead of 'npm run dev' to enable OpenAI integration.`;
+            }
+            throw new Error(`Failed to get ephemeral token: ${errorMessage}`);
         }
         
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            throw new Error('Invalid response from session endpoint. Make sure to run "npm start" instead of "npm run dev" to enable OpenAI integration.');
+        }
+        
         this.ephemeralKey = data.client_secret.value;
         
         if (!this.ephemeralKey) {
