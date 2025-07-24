@@ -133,7 +133,8 @@ H.UI = B.Core.Event_Emitter.extend(
                 }
             });
         }
-    }
+    },
+
     /**
      * INIT CONTROLS
      */
