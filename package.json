@@ -4,6 +4,6 @@
   "description": "Voice-reactive wave visualization",
   "main": "index.html",
   "scripts": {
-    "start": "python -m http.server 8000"
+    "start": "http-server . -p 8000 -c-1"
   }
 }
