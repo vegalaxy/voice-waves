@@ -96,7 +96,18 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
     },
 
     async getEphemeralToken() {
-        const response = await fetch(this.options.sessionEndpoint);
+        // Try relative path first (when served from Express server)
+        let response;
+        try {
+            response = await fetch(this.options.sessionEndpoint);
+        } catch (error) {
+            // If relative path fails, try the Express server on port 3000
+            try {
+                response = await fetch(`http://localhost:3000${this.options.sessionEndpoint}`);
+            } catch (fallbackError) {
+                throw new Error('Cannot connect to OpenAI session endpoint. Make sure to run "npm start" to enable OpenAI integration.');
+            }
+        }
         
         if (!response.ok) {
             let errorMessage = response.statusText;
