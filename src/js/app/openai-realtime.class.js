@@ -1,7 +1,7 @@
 H.OpenAIRealtime = B.Core.Event_Emitter.extend({
     options: {
-        model: "gpt-4o-realtime-preview-2024-10-01",
-        voice: "alloy",
+        model: "gpt-4o-realtime-preview-2025-06-03",
+        voice: "verse",
         sessionEndpoint: "/session"
     },
 
@@ -113,13 +113,11 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
 
     async setupWebRTC() {
         // Create peer connection
-        this.peerConnection = new RTCPeerConnection({
-            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-        });
+        this.peerConnection = new RTCPeerConnection();
 
         var that = this;
 
-        // Handle remote audio stream
+        // Handle remote audio stream - following official docs
         this.peerConnection.ontrack = function(event) {
             console.log('Received remote audio track');
             that.audioElement.srcObject = event.streams[0];
@@ -134,25 +132,19 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
             }
         };
 
-        // Get user media and add track
+        // Get user media and add track - following official docs
         try {
             this.localStream = await navigator.mediaDevices.getUserMedia({ 
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true,
-                    sampleRate: 24000
-                } 
+                audio: true
             });
             
-            this.localStream.getTracks().forEach(track => {
-                this.peerConnection.addTrack(track, this.localStream);
-            });
+            // Add the first audio track as per documentation
+            this.peerConnection.addTrack(this.localStream.getTracks()[0]);
         } catch (error) {
             throw new Error(`Failed to get user media: ${error.message}`);
         }
 
-        // Set up data channel for events
+        // Set up data channel for events - following official docs
         this.dataChannel = this.peerConnection.createDataChannel("oai-events");
         
         this.dataChannel.addEventListener("open", function() {
@@ -161,6 +153,8 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
         });
         
         this.dataChannel.addEventListener("message", function(event) {
+            // Realtime server events appear here as per docs
+            console.log('Received event:', event);
             that.handleRealtimeEvent(JSON.parse(event.data));
         });
         
@@ -171,13 +165,14 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
     },
 
     async establishConnection() {
-        // Create offer
+        // Create offer - following official docs
         const offer = await this.peerConnection.createOffer();
         await this.peerConnection.setLocalDescription(offer);
 
-        // Send offer to OpenAI
+        // Send offer to OpenAI - following official docs exactly
         const baseUrl = "https://api.openai.com/v1/realtime";
-        const sdpResponse = await fetch(`${baseUrl}?model=${this.options.model}`, {
+        const model = this.options.model;
+        const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
             method: "POST",
             body: offer.sdp,
             headers: {
@@ -190,10 +185,10 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
             throw new Error(`SDP exchange failed: ${sdpResponse.statusText}`);
         }
 
-        const answerSdp = await sdpResponse.text();
+        // Set remote description - following official docs
         const answer = {
             type: "answer",
-            sdp: answerSdp,
+            sdp: await sdpResponse.text(),
         };
         
         await this.peerConnection.setRemoteDescription(answer);
