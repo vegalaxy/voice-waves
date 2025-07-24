@@ -2,7 +2,7 @@ H.OpenAIRealtime = B.Core.Event_Emitter.extend({
     options: {
         model: "gpt-4o-realtime-preview-2025-06-03",
         voice: "verse",
-        sessionEndpoint: "http://localhost:3000/session"
+        sessionEndpoint: "/session"
     },
 
     construct: function(options) {
