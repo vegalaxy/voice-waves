@@ -1,9 +1,10 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+// Load environment variables
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,58 +13,37 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Enable CORS
 app.use(cors());
-app.use(express.json());
+
+// Serve static files
 app.use(express.static('.'));
 
-// Serve the main HTML file
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Endpoint to create ephemeral OpenAI API tokens
-app.get("/session", async (req, res) => {
+// Session endpoint for OpenAI Realtime API
+app.get('/session', async (req, res) => {
   try {
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ 
-        error: "OpenAI API key not configured. Please set OPENAI_API_KEY environment variable." 
-      });
-    }
-
-    const response = await fetch("https://api.openai.com/v1/realtime/sessions", {
-      method: "POST",
+    const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-4o-realtime-preview-2025-06-03",
-        voice: "verse",
-        instructions: "You are a helpful AI assistant. Keep responses concise and engaging.",
-        input_audio_format: "pcm16",
-        output_audio_format: "pcm16",
-        input_audio_transcription: {
-          model: "whisper-1"
-        }
+        model: 'gpt-4o-realtime-preview-2025-06-03',
+        voice: 'verse',
       }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("OpenAI API Error:", errorText);
-      return res.status(response.status).json({ 
-        error: "Failed to create session with OpenAI API",
-        details: errorText
-      });
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    console.error("Session creation error:", error);
+    console.error('Error creating OpenAI session:', error);
     res.status(500).json({ 
-      error: "Internal server error", 
+      error: 'Failed to create OpenAI session',
       details: error.message 
     });
   }
@@ -71,5 +51,5 @@ app.get("/session", async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  console.log("Make sure to set your OPENAI_API_KEY environment variable");
+  console.log('OpenAI integration enabled - use this server for full functionality');
 });
