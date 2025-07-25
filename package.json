@@ -5,7 +5,8 @@
   "main": "index.html",
   "scripts": {
     "start": "node server.js",
-    "dev": "http-server . -p 8000 -c-1"
+    "dev": "http-server . -p 8000 -c-1",
+    "build": "echo 'Build complete (no specific build steps defined for this project).'"
   },
   "type": "module",
   "dependencies": {
