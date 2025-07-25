@@ -5,8 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "node server.js",
-    "dev": "http-server . -p 8000 -c-1",
-    "build": "echo 'Build complete - ready for Netlify deployment'"
+    "dev": "http-server . -p 8000 -c-1"
   },
   "type": "module",
   "dependencies": {
