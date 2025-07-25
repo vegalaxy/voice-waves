@@ -68,23 +68,10 @@ H.UI = B.Core.Event_Emitter.extend(
             background: rgba(255, 255, 255, 0.1);
         `;
         
-        // Transcription display
-        this.openai_controls.$.transcription = document.createElement('div');
-        this.openai_controls.$.transcription.style.cssText = `
-            max-height: 100px;
-            overflow-y: auto;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            line-height: 1.4;
-        `;
-        this.openai_controls.$.transcription.innerHTML = '<em>Transcription will appear here...</em>';
         
         // Add elements to container
         this.openai_controls.$.container.appendChild(this.openai_controls.$.connect);
         this.openai_controls.$.container.appendChild(this.openai_controls.$.status);
-        this.openai_controls.$.container.appendChild(this.openai_controls.$.transcription);
         
         // Add to page
         document.body.appendChild(this.openai_controls.$.container);
@@ -111,27 +98,6 @@ H.UI = B.Core.Event_Emitter.extend(
                 that.openai_controls.$.status.style.background = 'rgba(255, 0, 0, 0.3)';
             });
             
-            this.openai.on('transcription_completed', function(event) {
-                if (event.transcript) {
-                    that.openai_controls.$.transcription.innerHTML = 
-                        '<strong>You:</strong> ' + event.transcript + '<br>' + 
-                        that.openai_controls.$.transcription.innerHTML;
-                }
-            });
-            
-            this.openai.on('text_response', function(event) {
-                if (event.delta) {
-                    var currentContent = that.openai_controls.$.transcription.innerHTML;
-                    if (!currentContent.includes('<strong>AI:</strong>')) {
-                        that.openai_controls.$.transcription.innerHTML = 
-                            '<strong>AI:</strong> ' + event.delta + '<br>' + currentContent;
-                    } else {
-                        // Append to existing AI response
-                        that.openai_controls.$.transcription.innerHTML = 
-                            currentContent.replace('<strong>AI:</strong> ', '<strong>AI:</strong> ' + event.delta);
-                    }
-                }
-            });
         }
     },
 
